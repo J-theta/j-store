@@ -1,6 +1,6 @@
 {
 	"name": "@j-theta/j-store",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Use the localStorage like a small database",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
@@ -8,7 +8,13 @@
 	"scripts": {
 		"build": "tsc"
 	},
-	"keywords": [],
+	"keywords": [
+		"store",
+		"localStorage",
+		"database",
+		"client-side",
+		"storage"
+	],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
