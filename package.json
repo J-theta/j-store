@@ -1,6 +1,6 @@
 {
 	"name": "@j-theta/j-store",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Use the localStorage like a small database",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
