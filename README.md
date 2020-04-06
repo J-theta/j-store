@@ -19,7 +19,7 @@ npm i --save @j-theta/j-store
 ### Usage
 
 ```javascript
-import jStore from 'j-store';
+import jStore from '@j-theta/j-store';
 // will save the object passed in the localStorage 
 // if there are already an object in the localStorage with the key
 // __JSTORE__, then this object will be ignored
