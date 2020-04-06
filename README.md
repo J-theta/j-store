@@ -13,7 +13,7 @@ __Some warnings__
 ### Instalation
 
 ```
-npm i --save j-store
+npm i --save @j-theta/j-store
 ```
 
 ### Usage

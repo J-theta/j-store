@@ -1,5 +1,5 @@
 {
-	"name": "j-store",
+	"name": "@j-theta/j-store",
 	"version": "1.0.0",
 	"description": "Use the localStorage like a small database",
 	"main": "lib/index.js",
