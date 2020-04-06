@@ -85,17 +85,23 @@ export default class jStore {
 	/**
 	 * Set new data in the given `path`
 	 * @param path the path to set.
-	 * @param data the new data.
+	 * @param neodata the new data.
 	 */
-	public set(path = '/', data: any) {
-		if (path === '/') this.update(data);
+	public set(path = '/', neodata: any) {
+		if (path === '/') this.update(neodata);
 		else {
-			let cdata = this.store;
+			let data = this.get();
+			let cdata = this.get();
 			const paths = path.split('/').filter(a => a.trim() !== '');
 			const lpath = paths.pop();
-			paths.forEach(path => (cdata = cdata[path]));
-			cdata[lpath] = data;
-			this.update(cdata);
+			paths.forEach(path => {
+				if (!cdata[path]) cdata[path] = {};
+				cdata = cdata[path];
+			});
+			cdata[lpath] = neodata;
+			const foo: Function = new Function('data', 'cdata', `data${paths.map(p => `['${p}']`).join('')} = cdata`);
+			foo(data, cdata);
+			this.update(data);
 		}
 	}
 	/**
