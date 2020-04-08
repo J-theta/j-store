@@ -109,7 +109,7 @@ export default class jStore {
 						return `${d} = ${d} || {}`;
 					})
 					.join(';\n');
-				const foo: Function = new Function(
+				const update: Function = new Function(
 					'data',
 					'cdata',
 					`
@@ -117,7 +117,7 @@ export default class jStore {
           data${objectPaths.join('')} = cdata
           `
 				);
-				foo(data, cdata);
+				update(data, cdata);
 			}
 			this.update(data);
 		}
