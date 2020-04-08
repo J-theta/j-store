@@ -8,12 +8,8 @@ const store = new jStore({
 		'33': { name: 'Chester Burgess', age: 63, email: 'bipasese@kotobga.nl' }
 	}
 });
-// store.reset();
+store.reset();
 
-// console.log(store.get());
+store.set('/foo/bar/hello/world/ei', { hello: 'world' });
 
-store.set('/foo/bar/5', { hello: 'world' });
-
-// store.set('/users/45', { name: 'Helena Henry', age: 45, email: 'puszeb@dil.dz' });
-
-console.log(store.get('/'));
+console.log(store.get());
