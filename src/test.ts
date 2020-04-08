@@ -1,6 +1,6 @@
-import jStore from './index';
+import jStore, { jStoreAsync } from './index';
 
-const store = new jStore({
+const store = new jStoreAsync({
 	users: {
 		'15': { name: 'Loretta Barnes', age: 26, email: 'jegede@hisric.mp' },
 		'13': { name: 'Ada Taylor', age: 33, email: 'suommi@tozar.cc' },
@@ -8,8 +8,12 @@ const store = new jStore({
 		'33': { name: 'Chester Burgess', age: 63, email: 'bipasese@kotobga.nl' }
 	}
 });
-store.reset();
 
-store.set('/foo/bar/hello/world/ei', { hello: 'world' });
+store.get('/users/15').then(console.log);
 
-console.log(store.get());
+store
+	.post('/users/15', { hello: 'world' })
+	.then(() => console.log('users has been updated'))
+	.catch(e => console.log(e));
+
+store.exists('/users/97').then(res => console.log('The user 97 exists = ' + res));

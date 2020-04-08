@@ -175,27 +175,43 @@ export default class jStore {
 		else this.set(path, data);
 	}
 }
-
-class jStoreAsync {
+/**
+ * This class is useful when you want to simulate real requests to a dabatase, to see how your UI handle promises.
+ *
+ * Like real databases, Theses requests always returns a promise.
+ */
+export class jStoreAsync {
 	delay: number;
 	store: jStore;
+	/**
+	 * Create a new database simulator.
+	 * @param data the initial state
+	 * @param delay the delay of each request
+	 */
 	constructor(data: object, delay: number = 1000) {
 		this.delay = delay;
 		this.store = new jStore(data);
 	}
 
-	private promise<T>(callback: () => any): Promise<T> {
-		const delay = this.delay;
-		return new Promise(res => setTimeout(() => res(callback()), delay));
+	private promise<T>(callback: () => any, delay = 1000): Promise<T> {
+		return new Promise((res, rej) =>
+			setTimeout(() => {
+				try {
+					res(callback());
+				} catch (e) {
+					rej(e);
+				}
+			}, delay)
+		);
 	}
 	/**
 	 * Get data from store with the given `path`
 	 * @param path the path to get the data.
 	 * @param options an option object to determine the results
 	 */
-	public get(path: string, options?: options) {
-		const { store, promise } = this;
-		return promise<any>(() => store.get(path, options));
+	public get(path: string = '/', options?: options) {
+		const { store, promise, delay } = this;
+		return promise<any>(() => store.get(path, options), delay);
 	}
 	/**
 	 * Set new data in the given `path`
@@ -203,25 +219,25 @@ class jStoreAsync {
 	 * @param neodata the new data.
 	 */
 	public set(path: string, neodata: any) {
-		const { store, promise } = this;
+		const { store, promise, delay } = this;
 		return promise<void>(() => {
 			store.set(path, neodata);
-		});
+		}, delay);
 	}
 	/**
 	 * Reset the `store` for its *default* state.
 	 */
 	public reset() {
-		const { store, promise } = this;
-		return promise<void>(() => store.reset());
+		const { store, promise, delay } = this;
+		return promise<void>(() => store.reset(), delay);
 	}
 	/**
 	 * Remove a path from the `store`.
 	 * @param path the path to remove.
 	 */
 	public remove(path: string) {
-		const { store, promise } = this;
-		return promise<void>(() => store.remove(path));
+		const { store, promise, delay } = this;
+		return promise<void>(() => store.remove(path), delay);
 	}
 	/**
 	 * Add new items to an array in the `store`
@@ -230,16 +246,16 @@ class jStoreAsync {
 	 * @param index Optional - the index to add the value. If ommited, the value will be add at the end
 	 */
 	public add(path: string, value: any, index?: number) {
-		const { store, promise } = this;
-		return promise<void>(() => store.add(path, value, index));
+		const { store, promise, delay } = this;
+		return promise<void>(() => store.add(path, value, index), delay);
 	}
 	/**
 	 * Test if a path exists in the `store`;
 	 * @param path the path to test.
 	 */
 	public exists(path: string) {
-		const { store, promise } = this;
-		return promise<boolean>(() => store.exists(path));
+		const { store, promise, delay } = this;
+		return promise<boolean>(() => store.exists(path), delay);
 	}
 	/**
 	 * Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly change the data of an path that already exists.
@@ -247,7 +263,7 @@ class jStoreAsync {
 	 * @param data the data to add.
 	 */
 	public post(path: string, data: any) {
-		const { store, promise } = this;
-		return promise<void>(() => store.post(path, data));
+		const { store, promise, delay } = this;
+		return promise<void>(() => store.post(path, data), delay);
 	}
 }
