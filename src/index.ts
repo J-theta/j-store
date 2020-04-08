@@ -93,14 +93,32 @@ export default class jStore {
 			let data = this.get();
 			let cdata = this.get();
 			const paths = path.split('/').filter(a => a.trim() !== '');
-			const lpath = paths.pop();
-			paths.forEach(path => {
-				if (!cdata[path]) cdata[path] = {};
-				cdata = cdata[path];
-			});
-			cdata[lpath] = neodata;
-			const foo: Function = new Function('data', 'cdata', `data${paths.map(p => `['${p}']`).join('')} = cdata`);
-			foo(data, cdata);
+			if (paths.length === 1) data[paths[0]] = neodata;
+			else {
+				const lpath = paths.pop();
+				paths.forEach(path => {
+					if (!cdata[path]) cdata[path] = {};
+					cdata = cdata[path];
+				});
+				cdata[lpath] = neodata;
+				let objectPaths = paths.map(p => `['${p}']`);
+				let lpaths = objectPaths.map((p, i) => objectPaths.slice(0, i)).filter(a => a.length > 0);
+				let fbody = lpaths
+					.map(p => {
+						let d = `data${p.join('')}`;
+						return `${d} = ${d} || {}`;
+					})
+					.join(';\n');
+				const foo: Function = new Function(
+					'data',
+					'cdata',
+					`
+          ${fbody}
+          data${objectPaths.join('')} = cdata
+          `
+				);
+				foo(data, cdata);
+			}
 			this.update(data);
 		}
 	}
@@ -135,5 +153,101 @@ export default class jStore {
 		else if (index === 0) array.unshift(value);
 		else array.push(value);
 		this.set(path, array);
+	}
+	/**
+	 * Test if a path exists in the `store`;
+	 * @param path the path to test.
+	 */
+	public exists(path: string): boolean {
+		try {
+			return typeof this.get(path) !== 'undefined';
+		} catch (e) {
+			return false;
+		}
+	}
+	/**
+	 * Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly change the data of an path that already exists.
+	 * @param path the path of the new data. (must be a non existed path)
+	 * @param data the data to add.
+	 */
+	public post(path: string, data: any) {
+		if (this.exists(path)) throw new Error(`The path ${path} is already been used`);
+		else this.set(path, data);
+	}
+}
+
+class jStoreAsync {
+	delay: number;
+	store: jStore;
+	constructor(data: object, delay: number = 1000) {
+		this.delay = delay;
+		this.store = new jStore(data);
+	}
+
+	private promise<T>(callback: () => any): Promise<T> {
+		const delay = this.delay;
+		return new Promise(res => setTimeout(() => res(callback()), delay));
+	}
+	/**
+	 * Get data from store with the given `path`
+	 * @param path the path to get the data.
+	 * @param options an option object to determine the results
+	 */
+	public get(path: string, options?: options) {
+		const { store, promise } = this;
+		return promise<any>(() => store.get(path, options));
+	}
+	/**
+	 * Set new data in the given `path`
+	 * @param path the path to set.
+	 * @param neodata the new data.
+	 */
+	public set(path: string, neodata: any) {
+		const { store, promise } = this;
+		return promise<void>(() => {
+			store.set(path, neodata);
+		});
+	}
+	/**
+	 * Reset the `store` for its *default* state.
+	 */
+	public reset() {
+		const { store, promise } = this;
+		return promise<void>(() => store.reset());
+	}
+	/**
+	 * Remove a path from the `store`.
+	 * @param path the path to remove.
+	 */
+	public remove(path: string) {
+		const { store, promise } = this;
+		return promise<void>(() => store.remove(path));
+	}
+	/**
+	 * Add new items to an array in the `store`
+	 * @param path the array's path
+	 * @param value the value to add
+	 * @param index Optional - the index to add the value. If ommited, the value will be add at the end
+	 */
+	public add(path: string, value: any, index?: number) {
+		const { store, promise } = this;
+		return promise<void>(() => store.add(path, value, index));
+	}
+	/**
+	 * Test if a path exists in the `store`;
+	 * @param path the path to test.
+	 */
+	public exists(path: string) {
+		const { store, promise } = this;
+		return promise<boolean>(() => store.exists(path));
+	}
+	/**
+	 * Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly change the data of an path that already exists.
+	 * @param path the path of the new data. (must be a non existed path)
+	 * @param data the data to add.
+	 */
+	public post(path: string, data: any) {
+		const { store, promise } = this;
+		return promise<void>(() => store.post(path, data));
 	}
 }
