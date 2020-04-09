@@ -1,19 +1,23 @@
-import jStore, { jStoreAsync } from './index';
+import { jStoreAsync } from './index';
 
-const store = new jStoreAsync({
-	users: {
-		'15': { name: 'Loretta Barnes', age: 26, email: 'jegede@hisric.mp' },
-		'13': { name: 'Ada Taylor', age: 33, email: 'suommi@tozar.cc' },
-		'43': { name: 'Andre Gonzalez', age: 36, email: 'odudsus@uvjup.tr' },
-		'33': { name: 'Chester Burgess', age: 63, email: 'bipasese@kotobga.nl' }
-	}
-});
+const initialState = {
+	cities: ['Imozumop', 'Hiducuv', 'Gowoju', 'Retona', 'Pirovo', 'Uwlaji', 'Emefetil'],
+	emails: ['kogrefenu@leezu.bn', 'et@ravral.ly', 'rul@tecot.us', 'goga@biuka.bo', 'ugwedtuj@idoubcef.nc']
+};
 
-store.get('/users/15').then(console.log);
+const store = new jStoreAsync(initialState, 1200);
 
-store
-	.post('/users/15', { hello: 'world' })
-	.then(() => console.log('users has been updated'))
-	.catch(e => console.log(e));
+store.get('/cities').then(res => console.log(res));
+/*
+    [
+      'Imozumop',
+      'Hiducuv',
+      'Gowoju',
+      'Retona',
+      'Pirovo',
+      'Uwlaji',
+      'Emefetil',
+    ]
+  */
 
-store.exists('/users/97').then(res => console.log('The user 97 exists = ' + res));
+store.post('/cities', 'foo').catch(e => console.log(e));
