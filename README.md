@@ -5,6 +5,8 @@ Use the localStorage like a small database.
 > This package was created for me to use in my own projects,
 > but i thought that will be useful for others to use
 
+See this simple [Todo App](https://todo-app-self.now.sh/) that uses jStore.
+
 __Some warnings__
 1. This project is still in development, so pardon for any bugs and errors.
 2. I'm from brazil and my english is not so great, so if you see an english error in this documentation, i'm sorry.
