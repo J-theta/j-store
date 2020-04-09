@@ -11,16 +11,77 @@ interface options {
 	limit?: number;
 }
 
+interface Listeners {
+	/**
+	 * This function is called every time the `set` method is called.
+	 * @param path the path passed to `set`.
+	 * @param data the data passed to `set`.
+	 * @param store the store instance.
+	 */
+	onset(path?: string, data?: any, store?: jStore): void | any;
+	/**
+	 * This function is called every time the `post` method is called.
+	 * @param path the path passed to `post`.
+	 * @param data the data passed to `post`.
+	 * @param store the store instance.
+	 */
+	onpost(path?: string, data?: any, store?: jStore): void | any;
+	/**
+	 * This function is called every time the `get` method is called.
+	 * @param path the path passed to `get`.
+	 * @param store the store instance.
+	 */
+	onget(path?: string, store?: jStore): void | any;
+	/**
+	 * This function is called every time the `reset` method is called.
+	 * @param store the store instance.
+	 */
+	onreset(store?: jStore): void | any;
+	/**
+	 * This function is called every time the `remove` method is called.
+	 * @param path the path passed to `remove`.
+	 * @param store the store instance.
+	 */
+	onremove(path?: string, store?: jStore): void | any;
+	/**
+	 * This function is called every time the `add` method is called.
+	 * @param path the path passed to `add`.
+	 * @param value the value passed to `add`.
+	 * @param index the index passed to `add`.
+	 * @param store the store instance.
+	 */
+	onadd(path?: string, value?: any, index?: number, store?: jStore): void | any;
+}
+
+type Method = 'get' | 'set' | 'post' | 'remove' | 'reset' | 'add';
+
 export default class jStore {
 	public data: object;
 	public defaults: object;
+	private listeners: Partial<Listeners>;
 
-	constructor(data: object) {
+	constructor(data: object, listeners?: Partial<Listeners>) {
 		this.defaults = data;
+		this.listeners = listeners || {};
 		if (data && this.isFirtsTime()) {
 			this.data = data;
 			localStorage.setItem('__JSTORE__', JSON.stringify(data));
 		}
+	}
+	/**
+	 * Add a `event listener` to the store.
+	 * @param method the method to listen.
+	 * @param handler the callback function.
+	 */
+	public on(method: Method, handler: (...args: any[]) => void) {
+		this.listeners['on' + method] = handler;
+	}
+	/**
+	 * Remove a listener of a method.
+	 * @param method the method to remove the listener.
+	 */
+	public clearListener(method: Method) {
+		delete this.listeners[method];
 	}
 	/**
 	 * Check if is the store already exists
@@ -48,6 +109,10 @@ export default class jStore {
 	 * @param options an option object to determine the results
 	 */
 	public get(path = '/', options?: options): any {
+		const { onget } = this.listeners;
+		let response: any;
+		if (onget) response = onget(path, this);
+		if (response) return response;
 		if (path === '/') return this.store;
 		else {
 			const store = this.store;
@@ -89,11 +154,15 @@ export default class jStore {
 	 * @param path the path to set.
 	 * @param neodata the new data.
 	 */
-	public set(path = '/', neodata: any) {
+	public set(path = '/', neodata: any): Error | void {
+		const { onset } = this.listeners;
+		let response: any;
+		if (onset) response = onset(path, neodata, this);
+		if (response) return response;
 		if (path === '/') this.update(neodata);
 		else {
-			let data = this.get();
-			let cdata = this.get();
+			let data = this.store;
+			let cdata = this.store;
 			const paths = path.split('/').filter(a => a.trim() !== '');
 			if (paths.length === 1) data[paths[0]] = neodata;
 			else {
@@ -128,6 +197,8 @@ export default class jStore {
 	 * Reset the `store` for its *default* state.
 	 */
 	public reset() {
+		const { onreset } = this.listeners;
+		if (onreset) onreset(this);
 		localStorage.removeItem('__JSTORE__');
 		this.update(this.defaults);
 	}
@@ -136,12 +207,18 @@ export default class jStore {
 	 * @param path the path to remove.
 	 */
 	public remove(path: string) {
+		const { onremove, onset } = this.listeners;
+		let response: any;
+		if (onremove) response = onremove(path, this);
+		if (response) return response;
 		let cdata = this.store;
 		const paths = path.split('/').filter(a => a.trim() !== '');
 		const lpath = paths.pop();
 		paths.forEach(path => (cdata = cdata[path]));
 		delete cdata[lpath];
-		this.update(cdata);
+		delete this.listeners['onset'];
+		this.set(paths.join('/'), cdata);
+		this.listeners['onset'] = onset;
 	}
 	/**
 	 * Add new items to an array in the `store`
@@ -150,19 +227,29 @@ export default class jStore {
 	 * @param index Optional - the index to add the value. If ommited, the value will be add at the end
 	 */
 	public add(path: string, value: any, index?: number) {
+		const { onadd, onset } = this.listeners;
+		let response: any;
+		if (onadd) response = onadd(path, value, index || 0, this);
+		if (response) return response;
 		let array: any[] = Object.values(this.get(path));
 		if (index && index !== 0) array = [...array.slice(0, index), value, ...array.slice(index, array.length)];
 		else if (index === 0) array.unshift(value);
 		else array.push(value);
+		delete this.listeners['onset'];
 		this.set(path, array);
+		this.listeners['onset'] = onset;
 	}
 	/**
 	 * Test if a path exists in the `store`;
 	 * @param path the path to test.
 	 */
 	public exists(path: string): boolean {
+		const { onget } = this.listeners;
+		delete this.listeners['onget'];
 		try {
-			return typeof this.get(path) !== 'undefined';
+			let res = typeof this.get(path) !== 'undefined';
+			this.listeners['onget'] = onget;
+			return res;
 		} catch (e) {
 			return false;
 		}
@@ -172,9 +259,15 @@ export default class jStore {
 	 * @param path the path of the new data. (must be a non existed path)
 	 * @param data the data to add.
 	 */
-	public post(path: string, data: any) {
+	public post(path: string, data: any): void | Error {
+		const { onpost, onset } = this.listeners;
+		let response: any;
+		if (onpost) response = onpost(path, data, this);
+		if (response) return response;
 		if (this.exists(path)) throw new Error(`The path ${path} is already been used`);
+		if (onset) delete this.listeners['onset'];
 		else this.set(path, data);
+		this.listeners['onset'] = onset;
 	}
 }
 /**
@@ -188,7 +281,7 @@ export class jStoreAsync {
 	/**
 	 * Create a new database simulator.
 	 * @param data the initial state
-	 * @param delay the delay of each request in `miliseconds`
+	 * @param delay the delay of each request in `milliseconds`
 	 */
 	constructor(data: object, delay: number = 1000) {
 		this.delay = delay;
