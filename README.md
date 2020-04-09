@@ -73,7 +73,7 @@ store.get('/cities')
 store.get('/cities/0') // 'Medufpuh'
 
 // adding an item in the storage
-store.set('/hello', 'world!')
+store.post('/hello', 'world!')
 
 store.get('/hello') // 'world!'
 
@@ -94,22 +94,102 @@ store.get('/hello') // undefined
 ```typescript
 public get(path?: string, options?: options): any;
 ```
+> Example:
+```javascript
+const users = store.get('/users')
+```
+##
 2. __set__ - Set new data in the given `path`
 ```typescript
 public set(path: string, data: any): void;
 ```
-3. __reset__ - Reset the `store` to its *default* state.
+> Example:
+```javascript
+store.set('/users/17', { age: 25, name: "Janie Lewis" } )
+```
+##
+3. __post__ - Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly override the data of an path that already exists.
+```typescript
+public post(path: string, data: any): void;
+```
+> Example:
+```javascript
+// This is fine because the path '/hello' does not exists yet
+store.post('/hello', [ 'world' ] )
+// But this will cause an error, because the path '/users' already exists
+store.post('/users', { foo: 'bar' } )
+```
+##
+4. __reset__ - Reset the `store` to its *default* state.
 ```typescript
 public reset(): void;
 ```
-4. __remove__ - Remove a path from the `store`.
+> Example:
+```javascript
+store.reset() // the store will be transform to its default state
+```
+##
+5. __remove__ - Remove a path from the `store`.
 ```typescript
 public remove(path: string): void;
 ```
-1. __add__ - Add new items to an array in the `store`.
+> Example:
+```javascript
+store.get('/hello') // [ 'world' ]
+
+store.remove('/hello') // remove the '/hello' path
+
+store.get('/hello') // undefined
+```
+##
+6. __add__ - Add new items to an array in the `store`.
 ```typescript
 public add(path: string, value: any, index?: number): void;
 ```
+> Example:
+```javascript
+store.add('/cities', 'Litralun');
+store.get('/cities')
+/*
+[
+  "Medufpuh" ,  
+  "Oguagwon" ,  
+  "Wuhaful"  ,  
+  "Pitburi"  ,  
+  "Mimekiras",  
+  "Suvvakpo" ,
+  "Litralun" ,  
+ ]
+ */
+```
+> Add item in specific index
+```javascript
+store.add('/cities', 'Litralun', 1);
+store.get('/cities')
+/*
+[
+  0 -> "Medufpuh",
+  1 -> "Litralun",
+  2 -> "Oguagwon",
+  3 -> "Wuhaful",
+  4 -> "Pitburi",
+  5 -> "Mimekiras",
+  6 -> "Suvvakpo",
+ ]
+ */
+```
+##
+7. __exists__ - Test if a path exists in the `store`
+```typescript
+public add(path: string, value: any, index?: number): void;
+```
+> Example:
+```javascript
+store.exists('/users') // true
+
+store.exists('/Fejinka') // false
+```
+##
 
 ### Options to get
 
@@ -173,38 +253,4 @@ store.get('/users', { limit: 2 })
     { age: 40, name: "Randy Floyd"},
   ]
 */
-```
-
-### Adding items to array
-> Use the add method
-```javascript
-store.add('/cities', 'Litralun');
-store.get('/cities')
-/*
-[
-  "Medufpuh" ,  
-  "Oguagwon" ,  
-  "Wuhaful"  ,  
-  "Pitburi"  ,  
-  "Mimekiras",  
-  "Suvvakpo" ,
-  "Litralun" ,  
- ]
- */
-```
-#### Add item in specific index
-```javascript
-store.add('/cities', 'Litralun', 1);
-store.get('/cities')
-/*
-[
-  0 -> "Medufpuh",
-  1 -> "Litralun",
-  2 -> "Oguagwon",
-  3 -> "Wuhaful",
-  4 -> "Pitburi",
-  5 -> "Mimekiras",
-  6 -> "Suvvakpo",
- ]
- */
 ```

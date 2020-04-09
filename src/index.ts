@@ -83,7 +83,9 @@ export default class jStore {
 		}
 	}
 	/**
-	 * Set new data in the given `path`
+	 * Set new data in the given `path`.
+	 *
+	 * `Note:` If the path already exists, then its data will be override.
 	 * @param path the path to set.
 	 * @param neodata the new data.
 	 */
@@ -166,7 +168,7 @@ export default class jStore {
 		}
 	}
 	/**
-	 * Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly change the data of an path that already exists.
+	 * Like the `set` method, this method add new data in the `store`, but only if the path does not already exists. This is useful when you want to add new data without accidentaly override the data of an path that already exists.
 	 * @param path the path of the new data. (must be a non existed path)
 	 * @param data the data to add.
 	 */
@@ -178,7 +180,7 @@ export default class jStore {
 /**
  * This class is useful when you want to simulate real requests to a dabatase, to see how your UI handle promises.
  *
- * Like real databases, Theses requests always returns a promise.
+ * All methods of this class behave exactly like the `jStore` class, except that each method returns a promise.
  */
 export class jStoreAsync {
 	delay: number;
@@ -186,7 +188,7 @@ export class jStoreAsync {
 	/**
 	 * Create a new database simulator.
 	 * @param data the initial state
-	 * @param delay the delay of each request
+	 * @param delay the delay of each request in `miliseconds`
 	 */
 	constructor(data: object, delay: number = 1000) {
 		this.delay = delay;
